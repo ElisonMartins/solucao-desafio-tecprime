@@ -1,33 +1,52 @@
 import Image from "next/image";
 import { Product } from "@/types/product";
+import Button from "@/components/Button";
 
-export default function ProductCard({ product }: { product: Product }) {
+type Props = {
+  product: Product;
+  onSelect: (product: Product) => void;
+  onAddToCart: (product: Product) => void;
+};
+
+export default function ProductCard({ product, onSelect, onAddToCart }: Props) {
   return (
-    <div className="bg-white rounded-2xl shadow p-4 flex flex-col hover:shadow-lg transition">
-      <div className="relative h-40 mb-4">
+    <div
+      onClick={() => onSelect(product)}
+      className="bg-white rounded-2xl shadow-md hover:shadow-lg transition overflow-hidden flex flex-col h-full cursor-pointer"
+    >
+      <div className="relative w-full h-56 bg-gray-50">
         <Image
           src={product.imagem}
           alt={product.nome}
           fill
-          className="object-contain"
+          className="object-contain p-6"
         />
       </div>
 
-      <h2 className="font-semibold text-lg line-clamp-2 text-black">
-        {product.nome}
-      </h2>
+      <div className="p-5 flex flex-col flex-1">
+        <h2 className="font-semibold text-title text-lg leading-tight line-clamp-2 min-h-2">
+          {product.nome}
+        </h2>
 
-      <p className="text-gray-500 text-sm line-clamp-2">{product.descricao}</p>
+        <p className="text-description text-sm line-clamp-2 min-h-2 mt-2">
+          {product.descricao}
+        </p>
 
-      <div className="mt-3">
-        <span className="text-blue-600 font-bold text-xl">
-          R$ {product.preco.toFixed(2)}
-        </span>
+        <div className="flex items-center justify-between mt-auto pt-4 gap-3">
+          <span className="text-2xl font-bold text-gray-900">
+            R$ {product.preco.toFixed(2)}
+          </span>
+
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(product);
+            }}
+          >
+            <Button>Adicionar ao carrinho</Button>
+          </div>
+        </div>
       </div>
-
-      <button className="mt-auto bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
-        Adicionar ao carrinho
-      </button>
     </div>
   );
 }
