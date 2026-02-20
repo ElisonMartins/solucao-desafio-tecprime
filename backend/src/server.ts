@@ -5,8 +5,8 @@ import cors from "cors";
 
 import productRoutes from "./routes/product.routes";
 
-import authRoutes from "./modules/auth/auth.routes";
-import cartRoutes from "./modules/cart/cart.routes";
+import authRoutes from "./routes/auth.routes";
+import cartRoutes from "./routes/cart.routes";
 
 const app = express();
 
