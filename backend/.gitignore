@@ -23,3 +23,5 @@ prisma/dev.db
 # IDE
 .vscode/
 .idea/
+
+/src/generated/prisma
