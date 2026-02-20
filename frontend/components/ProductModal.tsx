@@ -6,6 +6,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import QuantitySelector from "@/components/QuantitySelector";
 import { addToCart } from "@/services/cart.service";
+import { FiX } from "react-icons/fi";
+import { toast } from "sonner";
 
 type Props = {
   product: Product | null;
@@ -18,6 +20,13 @@ export default function ProductModal({ product, onClose }: Props) {
 
   if (!product) return null;
 
+  const estoqueDisponivel = product.estoque > 0;
+
+  const resetAndClose = () => {
+    setQuantity(1);
+    onClose();
+  };
+
   const handleAdd = async () => {
     const token = localStorage.getItem("token");
 
@@ -28,9 +37,12 @@ export default function ProductModal({ product, onClose }: Props) {
 
     try {
       await addToCart(product.id, quantity);
-      onClose();
+
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      resetAndClose();
     } catch {
-      alert("Erro ao adicionar ao carrinho");
+      toast.error("Erro ao adicionar ao carrinho.");
     }
   };
 
@@ -44,9 +56,13 @@ export default function ProductModal({ product, onClose }: Props) {
 
     try {
       await addToCart(product.id, quantity);
+
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      setQuantity(1);
       router.push("/cart");
     } catch {
-      alert("Erro ao adicionar ao carrinho");
+      toast.error("Erro ao adicionar ao carrinho.");
     }
   };
 
@@ -54,10 +70,10 @@ export default function ProductModal({ product, onClose }: Props) {
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col md:flex-row overflow-hidden relative max-h-[90vh] overflow-y-auto">
         <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-black text-xl z-10"
+          onClick={resetAndClose}
+          className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition cursor-pointer"
         >
-          ✕
+          <FiX size={24} />
         </button>
 
         <div className="w-full md:w-1/2 bg-gray-50 flex items-center justify-center p-4 md:p-8">
@@ -82,19 +98,55 @@ export default function ProductModal({ product, onClose }: Props) {
             R$ {product.preco.toFixed(2)}
           </div>
 
-          <QuantitySelector value={quantity} onChange={setQuantity} />
+          <div className="flex items-center gap-3">
+            {estoqueDisponivel ? (
+              <>
+                <p className="text-gray-500 text-sm">
+                  {product.estoque} unidades em estoque
+                </p>
+
+                {product.estoque <= 5 && (
+                  <span className="bg-amber-50 text-amber-700 text-xs px-2 py-1 rounded-full">
+                    Últimas unidades
+                  </span>
+                )}
+              </>
+            ) : (
+              <p className="text-red-500 text-sm font-medium">
+                Produto esgotado
+              </p>
+            )}
+          </div>
+
+          {estoqueDisponivel && (
+            <QuantitySelector
+              value={quantity}
+              onChange={setQuantity}
+              max={product.estoque}
+            />
+          )}
 
           <div className="flex gap-3 mt-2">
             <button
               onClick={handleAdd}
-              className="flex-1 bg-black text-white py-3 rounded-xl hover:opacity-90 transition"
+              disabled={!estoqueDisponivel}
+              className={`flex-1 py-3 rounded-xl transition cursor-pointer ${
+                estoqueDisponivel
+                  ? "bg-black text-white hover:opacity-90"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+              }`}
             >
               Adicionar
             </button>
 
             <button
               onClick={handleBuyNow}
-              className="flex-1 border border-black text-black py-3 rounded-xl hover:bg-gray-100 transition"
+              disabled={!estoqueDisponivel}
+              className={`flex-1 border py-3 rounded-xl transition cursor-pointer ${
+                estoqueDisponivel
+                  ? "border-black text-black hover:bg-gray-100"
+                  : "border-gray-300 text-gray-400 cursor-not-allowed"
+              }`}
             >
               Comprar agora
             </button>
