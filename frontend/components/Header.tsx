@@ -6,6 +6,7 @@ import { FaUser } from "react-icons/fa";
 import { FiShoppingCart } from "react-icons/fi";
 import { jwtDecode } from "jwt-decode";
 import { getCart } from "@/services/cart.service";
+import { Cart } from "@/types/carts";
 
 type DecodedToken = {
   name: string;
@@ -30,10 +31,10 @@ export default function Header() {
         const decoded = jwtDecode<DecodedToken>(token);
         setUserName(decoded.name);
 
-        const cart = await getCart();
+        const cart: Cart = await getCart();
 
         const totalItens = cart.items.reduce(
-          (acc: number, item: any) => acc + item.quantity,
+          (acc, item) => acc + item.quantity,
           0,
         );
 
