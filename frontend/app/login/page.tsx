@@ -1,9 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { loginUser } from "@/services/auth.service";
+import { toast } from "sonner";
+
+interface ApiError {
+  message: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,26 +18,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const { token } = await loginUser({ email, password });
+
       localStorage.setItem("token", token);
+
+      toast.success("Login realizado com sucesso!");
+
       router.push("/");
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Erro no login");
+    } catch (error: unknown) {
+      const err = error as AxiosError<ApiError>;
+
+      toast.error(err.response?.data?.message || "Erro ao realizar login");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-gray-100 px-4">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-10 rounded-3xl shadow-xl w-full max-w-md space-y-6"
+        className="bg-white p-8 sm:p-10 rounded-3xl shadow-xl w-full max-w-md space-y-6"
       >
         <h1 className="text-3xl font-bold text-center text-gray-900">Entrar</h1>
 
@@ -58,7 +70,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold transition"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-semibold transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? "Entrando..." : "Entrar"}
         </button>

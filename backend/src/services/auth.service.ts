@@ -1,4 +1,4 @@
-import { prisma } from "../../lib/prisma";
+import { prisma } from "../lib/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -27,7 +27,7 @@ export const loginUser = async (email: string, password: string) => {
   if (!user) throw new Error("Usuário não encontrado");
 
   const valid = await bcrypt.compare(password, user.password);
-  if (!valid) throw new Error("Senha inválida");
+  if (!valid) throw new Error("E-mail ou senha inválidos");
 
   const token = jwt.sign(
     {

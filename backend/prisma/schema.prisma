@@ -36,20 +36,33 @@ model CartItem {
 }
 
 model Order {
-  id            String      @id @default(uuid())
-  user          User        @relation(fields: [userId], references: [id])
-  userId        String
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  name  String
+  email String
+
+  street       String
+  number       String
+  neighborhood String
+  city         String
+  state        String
+  cep          String
+  complement   String?
+
   paymentMethod String
-  total         Float
-  items         OrderItem[]
-  createdAt     DateTime    @default(now())
+  total         Decimal @db.Decimal(10, 2)
+
+  items     OrderItem[]
+  createdAt DateTime    @default(now())
 }
 
 model OrderItem {
-  id        String @id @default(uuid())
-  order     Order  @relation(fields: [orderId], references: [id])
+  id        String  @id @default(uuid())
+  order     Order   @relation(fields: [orderId], references: [id])
   orderId   String
   productId Int
   quantity  Int
-  price     Float
+  price     Decimal @db.Decimal(10, 2)
 }

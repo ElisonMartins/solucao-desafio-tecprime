@@ -4,8 +4,8 @@ import {
   getCart,
   updateItem,
   removeItem,
-} from "./cart.controller";
-import { authMiddleware } from "../../middlewares/auth.middleware";
+} from "./../controllers/cart.controller";
+import { authMiddleware } from "../middlewares/auth.middleware";
 
 const router = Router();
 
