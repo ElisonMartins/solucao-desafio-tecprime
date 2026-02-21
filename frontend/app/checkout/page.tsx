@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 import { FiArrowLeft } from "react-icons/fi";
 import Header from "@/components/Header";
-import { getCart } from "@/services/cart.service";
+import CheckoutForm from "@/components/CheckoutForm";
+import OrderSummary from "@/components/OrderSummary";
+
+import { getCart, clearCart } from "@/services/cart.service";
 import { getProducts } from "@/services/product.service";
 import { createOrder } from "@/services/order.service";
 import { toast } from "sonner";
@@ -89,7 +92,10 @@ export default function CheckoutPage() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
   };
 
   const handleCepChange = (value: string) => {
@@ -101,14 +107,13 @@ export default function CheckoutPage() {
         ? `${numeric.slice(0, 5)}-${numeric.slice(5)}`
         : numeric;
 
-    setForm({ ...form, cep: masked });
+    setForm((prev) => ({
+      ...prev,
+      cep: masked,
+    }));
+
     setCepValido(numeric.length === 8);
   };
-
-  const total = items.reduce(
-    (acc, item) => acc + item.product.preco * item.quantity,
-    0,
-  );
 
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
@@ -145,6 +150,11 @@ export default function CheckoutPage() {
         })),
       });
 
+      // Limpa o carrrinho
+      await clearCart();
+      // atualiza o badge do header
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
       toast.success("Pedido realizado com sucesso!");
       router.push(`/order-success/${response.orderId}`);
     } catch {
@@ -172,142 +182,18 @@ export default function CheckoutPage() {
           <div>
             <h2 className="text-3xl font-bold mb-8">Checkout</h2>
 
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  placeholder="Nome completo"
-                  className="input"
-                />
-                <input
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  placeholder="E-mail"
-                  className="input"
-                />
-              </div>
-
-              <input
-                name="street"
-                value={form.street}
-                onChange={handleChange}
-                placeholder="Rua"
-                className="input"
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="number"
-                  value={form.number}
-                  onChange={handleChange}
-                  placeholder="Número"
-                  className="input"
-                />
-
-                <input
-                  value={form.cep}
-                  onChange={(e) => handleCepChange(e.target.value)}
-                  placeholder="CEP"
-                  className="input"
-                />
-              </div>
-
-              <input
-                name="neighborhood"
-                value={form.neighborhood}
-                onChange={handleChange}
-                placeholder="Bairro"
-                className="input"
-              />
-
-              <div className="grid grid-cols-2 gap-4">
-                <input
-                  name="city"
-                  value={form.city}
-                  onChange={handleChange}
-                  placeholder="Cidade"
-                  className="input"
-                />
-                <input
-                  name="state"
-                  value={form.state}
-                  onChange={handleChange}
-                  placeholder="Estado"
-                  className="input"
-                />
-              </div>
-
-              <input
-                name="complement"
-                value={form.complement}
-                onChange={handleChange}
-                placeholder="Complemento (opcional)"
-                className="input"
-              />
-
-              <select
-                name="paymentMethod"
-                value={form.paymentMethod}
-                onChange={handleChange}
-                className="input"
-              >
-                <option value="Pix">Pix</option>
-                <option value="Cartão">Cartão</option>
-                <option value="Boleto">Boleto</option>
-              </select>
-
-              <button
-                onClick={handleSubmit}
-                disabled={submitting}
-                className="w-full bg-black text-white py-3 rounded-xl hover:opacity-90 disabled:opacity-50 transition"
-              >
-                {submitting ? "Processando..." : "Confirmar Pedido"}
-              </button>
-            </div>
+            <CheckoutForm
+              form={form}
+              onChange={handleChange}
+              onCepChange={handleCepChange}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+            />
           </div>
 
-          {/* resumo do pedido */}
-          <div className="bg-gray-50 p-6 rounded-2xl h-fit">
-            <h2 className="text-xl font-bold mb-4">Resumo do Pedido</h2>
-
-            {items.map((item) => (
-              <div key={item.id} className="flex justify-between mb-2">
-                <span>
-                  {item.product.nome} x {item.quantity}
-                </span>
-                <span>
-                  R$ {(item.product.preco * item.quantity).toFixed(2)}
-                </span>
-              </div>
-            ))}
-
-            <hr className="my-4" />
-
-            <div className="flex justify-between text-lg font-bold">
-              <span>Total</span>
-              <span>R$ {total.toFixed(2)}</span>
-            </div>
-          </div>
+          <OrderSummary items={items} />
         </div>
       </div>
-
-      <style jsx>{`
-        .input {
-          width: 100%;
-          border: 1px solid #e5e7eb;
-          padding: 12px;
-          border-radius: 12px;
-          outline: none;
-          transition: all 0.2s;
-        }
-
-        .input:focus {
-          border-color: black;
-        }
-      `}</style>
     </>
   );
 }

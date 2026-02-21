@@ -32,3 +32,8 @@ export const removeCartItem = async (itemId: string) => {
   const response = await api.delete(`/cart/items/${itemId}`);
   return response.data;
 };
+
+export const clearCart = async () => {
+  const response = await api.delete("/cart/clear");
+  return response.data;
+};
