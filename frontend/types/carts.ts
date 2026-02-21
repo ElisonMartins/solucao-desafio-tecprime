@@ -1,3 +1,5 @@
+import { Product } from "./product";
+
 export interface CartItem {
   id: number;
   productId: number;
@@ -7,3 +9,7 @@ export interface CartItem {
 export interface Cart {
   items: CartItem[];
 }
+
+export type MergedCartItem = CartItem & {
+  product: Product;
+};
