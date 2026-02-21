@@ -4,6 +4,7 @@ import {
   getCart,
   updateItem,
   removeItem,
+  clearCartItems
 } from "./../controllers/cart.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
@@ -138,5 +139,31 @@ router.patch("/items/:itemId", authMiddleware, updateItem);
  *         description: Erro ao remover item
  */
 router.delete("/items/:itemId", authMiddleware, removeItem);
+
+/**
+ * @swagger
+ * /cart/clear:
+ *   delete:
+ *     summary: Remove todos os itens do carrinho do usuário autenticado
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Carrinho limpo com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Carrinho limpo com sucesso
+ *       400:
+ *         description: Erro ao limpar carrinho
+ *       401:
+ *         description: Não autorizado
+ */
+router.delete("/clear", authMiddleware, clearCartItems);
 
 export default router;
