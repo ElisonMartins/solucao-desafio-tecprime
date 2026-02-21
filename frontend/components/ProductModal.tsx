@@ -82,6 +82,7 @@ export default function ProductModal({ product, onClose }: Props) {
               src={product.imagem}
               alt={product.nome}
               fill
+              sizes="(min-width: 768px) 50vw, 100vw"
               className="object-contain"
             />
           </div>

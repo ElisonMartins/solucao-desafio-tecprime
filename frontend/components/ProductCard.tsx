@@ -19,6 +19,7 @@ export default function ProductCard({ product, onSelect, onAddToCart }: Props) {
           src={product.imagem}
           alt={product.nome}
           fill
+          sizes="(min-width: 768px) 50vw, 100vw"
           className="object-contain p-6"
         />
       </div>
