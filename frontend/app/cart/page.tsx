@@ -11,6 +11,7 @@ import QuantitySelector from "@/components/QuantitySelector";
 import Image from "next/image";
 import { FiTrash2, FiArrowLeft } from "react-icons/fi";
 import Header from "@/components/Header";
+import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 
 type CartItem = {
@@ -103,7 +104,7 @@ export default function CartPage() {
     0,
   );
 
-  if (loading) return <p className="p-6">Carregando...</p>;
+  if (loading) return <Loader />;
 
   return (
     <>
@@ -131,6 +132,7 @@ export default function CartPage() {
                       src={item.product.imagem}
                       alt={item.product.nome}
                       fill
+                      sizes="112px"
                       className="object-contain p-3"
                     />
                   </div>

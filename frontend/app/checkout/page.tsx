@@ -7,6 +7,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import Header from "@/components/Header";
 import CheckoutForm from "@/components/CheckoutForm";
 import OrderSummary from "@/components/OrderSummary";
+import Loader from "@/components/Loader";
 
 import { getCart, clearCart } from "@/services/cart.service";
 import { getProducts } from "@/services/product.service";
@@ -164,7 +165,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (loading) return <p className="p-6">Carregando...</p>;
+  if (loading) return <Loader />;
 
   return (
     <>

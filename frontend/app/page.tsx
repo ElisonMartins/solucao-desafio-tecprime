@@ -1,22 +1,45 @@
 "use client";
 
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { getProducts } from "@/services/product.service";
+import { addToCart } from "@/services/cart.service";
 import { Product } from "@/types/product";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
 import Header from "@/components/Header";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     getProducts().then(setProducts);
   }, []);
 
-  const handleAddToCart = (product: Product) => {
-    console.log("Adicionado:", product);
+  const handleAddToCart = async (product: Product) => {
+    try {
+      await addToCart(product.id, 1);
+
+      window.dispatchEvent(new CustomEvent("cartUpdated"));
+
+      toast.success("Produto adicionado ao carrinho");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          toast.error("Faça login para adicionar ao carrinho");
+          router.push("/login");
+        } else {
+          toast.error("Erro ao adicionar ao carrinho");
+        }
+      } else {
+        toast.error("Erro inesperado");
+      }
+    }
   };
 
   return (

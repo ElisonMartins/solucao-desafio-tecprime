@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Product } from "@/types/product";
 import Button from "@/components/Button";
@@ -34,8 +36,8 @@ export default function ProductCard({ product, onSelect, onAddToCart }: Props) {
         </p>
 
         <div className="flex items-center justify-between mt-auto pt-4 gap-3">
-          <span className="text-2xl font-bold text-gray-900">
-            R$ {product.preco.toFixed(2)}
+          <span className="text-xl md:text-2xl font-bold text-gray-900">
+            R${product.preco.toFixed(2)}
           </span>
 
           <div

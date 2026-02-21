@@ -71,7 +71,7 @@ export default function ProductModal({ product, onClose }: Props) {
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col md:flex-row overflow-hidden relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={resetAndClose}
-          className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition cursor-pointer"
+          className="absolute top-4 right-4 z-50 text-red-400 hover:text-red-600 transition cursor-pointer"
         >
           <FiX size={24} />
         </button>
@@ -137,7 +137,7 @@ export default function ProductModal({ product, onClose }: Props) {
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              Adicionar
+              Adicionar ao carrinho
             </button>
 
             <button

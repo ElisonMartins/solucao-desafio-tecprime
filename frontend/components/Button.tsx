@@ -34,6 +34,7 @@ export default function Button({
         duration-500
         hover:text-white
         active:scale-95
+        cursor-pointer
         group
         ${className}
       `}
