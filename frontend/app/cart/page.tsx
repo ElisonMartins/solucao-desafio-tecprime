@@ -214,8 +214,11 @@ export default function CartPage() {
                 <span>R$ {total.toFixed(2)}</span>
               </div>
 
-              <button className="w-full bg-black text-white py-3 rounded-xl hover:opacity-90 transition cursor-pointer">
-                Finalizar Compra
+              <button
+                onClick={() => router.push("/checkout")}
+                className="w-full bg-black text-white py-3 rounded-xl hover:opacity-90 transition cursor-pointer"
+              >
+                Continuar
               </button>
             </div>
           </div>
