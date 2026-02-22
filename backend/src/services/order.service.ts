@@ -1,45 +1,43 @@
 import { prisma } from "../lib/prisma";
 import { Prisma } from "@prisma/client";
+import { CreateOrderInput } from "../validators/order.schema";
 
-type CreateOrderDTO = {
-  name: string;
-  email: string;
+export const createOrder = async (data: CreateOrderInput) => {
+  return prisma.$transaction(async (tx) => {
+    let total = 0;
 
-  street: string;
-  number: string;
-  neighborhood: string;
-  city: string;
-  state: string;
-  cep: string;
-  complement?: string;
+    const validatedItems = [];
 
-  paymentMethod: "Pix" | "Cartão" | "Boleto";
+    for (const item of data.items) {
+      const product = await tx.product.findUnique({
+        where: { id: item.productId },
+      });
 
-  userId: string;
+      if (!product) {
+        throw new Error(`Produto ${item.productId} não encontrado`);
+      }
 
-  items: {
-    productId: number;
-    quantity: number;
-    price: number; // vem do frontend
-  }[];
-};
+      if (product.stock < item.quantity) {
+        throw new Error(`Estoque insuficiente para ${product.name}`);
+      }
 
-export const createOrder = async (data: CreateOrderDTO) => {
-  if (!data.items || data.items.length === 0) {
-    throw new Error("Pedido precisa ter ao menos um item");
-  }
+      const itemTotal = Number(product.price) * item.quantity;
+      total += itemTotal;
 
-  const validPayments = ["Pix", "Cartão", "Boleto"];
-  if (!validPayments.includes(data.paymentMethod)) {
-    throw new Error("Forma de pagamento inválida");
-  }
+      validatedItems.push({
+        productId: product.id,
+        quantity: item.quantity,
+        price: product.price,
+      });
 
-  // Calcular total
-  const total = data.items.reduce((acc, item) => {
-    return acc + item.price * item.quantity;
-  }, 0);
+      await tx.product.update({
+        where: { id: product.id },
+        data: {
+          stock: product.stock - item.quantity,
+        },
+      });
+    }
 
-  const order = await prisma.$transaction(async (tx) => {
     const createdOrder = await tx.order.create({
       data: {
         userId: data.userId,
@@ -58,18 +56,16 @@ export const createOrder = async (data: CreateOrderDTO) => {
     });
 
     await tx.orderItem.createMany({
-      data: data.items.map((item) => ({
+      data: validatedItems.map((item) => ({
         orderId: createdOrder.id,
         productId: item.productId,
         quantity: item.quantity,
-        price: new Prisma.Decimal(item.price),
+        price: item.price,
       })),
     });
 
     return createdOrder;
   });
-
-  return order;
 };
 
 export const getOrderById = async (id: string) => {

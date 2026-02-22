@@ -20,7 +20,7 @@ export default function ProductModal({ product, onClose }: Props) {
 
   if (!product) return null;
 
-  const estoqueDisponivel = product.estoque > 0;
+  const stockAvailable = product.stock > 0;
 
   const resetAndClose = () => {
     setQuantity(1);
@@ -71,7 +71,7 @@ export default function ProductModal({ product, onClose }: Props) {
       <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl flex flex-col md:flex-row overflow-hidden relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={resetAndClose}
-          className="absolute top-4 right-4 text-red-400 hover:text-red-600 transition cursor-pointer"
+          className="absolute top-4 right-4 z-50 text-red-400 hover:text-red-600 transition cursor-pointer"
         >
           <FiX size={24} />
         </button>
@@ -79,33 +79,34 @@ export default function ProductModal({ product, onClose }: Props) {
         <div className="w-full md:w-1/2 bg-gray-50 flex items-center justify-center p-4 md:p-8">
           <div className="relative w-full h-60 md:h-80">
             <Image
-              src={product.imagem}
-              alt={product.nome}
+              src={product.image}
+              alt={product.name}
               fill
+              sizes="(min-width: 768px) 50vw, 100vw"
               className="object-contain"
             />
           </div>
         </div>
 
         <div className="w-full md:w-1/2 p-5 md:p-8 flex flex-col gap-4">
-          <h2 className="text-xl md:text-2xl font-bold">{product.nome}</h2>
+          <h2 className="text-xl md:text-2xl font-bold">{product.name}</h2>
 
           <p className="text-gray-600 text-sm md:text-base">
-            {product.descricao}
+            {product.description}
           </p>
 
           <div className="text-2xl md:text-3xl font-bold text-black">
-            R$ {product.preco.toFixed(2)}
+            R$ {Number(product.price).toFixed(2)}
           </div>
 
           <div className="flex items-center gap-3">
-            {estoqueDisponivel ? (
+            {stockAvailable ? (
               <>
                 <p className="text-gray-500 text-sm">
-                  {product.estoque} unidades em estoque
+                  {product.stock} unidades em estoque
                 </p>
 
-                {product.estoque <= 5 && (
+                {product.stock <= 5 && (
                   <span className="bg-amber-50 text-amber-700 text-xs px-2 py-1 rounded-full">
                     Últimas unidades
                   </span>
@@ -118,32 +119,32 @@ export default function ProductModal({ product, onClose }: Props) {
             )}
           </div>
 
-          {estoqueDisponivel && (
+          {stockAvailable && (
             <QuantitySelector
               value={quantity}
               onChange={setQuantity}
-              max={product.estoque}
+              max={product.stock}
             />
           )}
 
           <div className="flex gap-3 mt-2">
             <button
               onClick={handleAdd}
-              disabled={!estoqueDisponivel}
+              disabled={!stockAvailable}
               className={`flex-1 py-3 rounded-xl transition cursor-pointer ${
-                estoqueDisponivel
+                stockAvailable
                   ? "bg-black text-white hover:opacity-90"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
             >
-              Adicionar
+              Adicionar ao carrinho
             </button>
 
             <button
               onClick={handleBuyNow}
-              disabled={!estoqueDisponivel}
+              disabled={!stockAvailable}
               className={`flex-1 border py-3 rounded-xl transition cursor-pointer ${
-                estoqueDisponivel
+                stockAvailable
                   ? "border-black text-black hover:bg-gray-100"
                   : "border-gray-300 text-gray-400 cursor-not-allowed"
               }`}

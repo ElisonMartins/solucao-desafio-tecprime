@@ -1,22 +1,37 @@
+import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 import { fetchFakeStoreProducts } from "../integrations/fakestore.integration";
 
-type FakeStoreProduct = {
-  id: number;
-  title: string;
-  description: string;
-  price: number;
-  image: string;
+export const syncProducts = async () => {
+  const existing = await prisma.product.findMany();
+
+  if (existing.length > 0) {
+    return existing;
+  }
+
+  const apiProducts = await fetchFakeStoreProducts();
+  //Normalização dos dados
+  const normalized = apiProducts.map((p: any) => ({
+    id: p.id,
+    name: p.title,
+    description: p.description,
+    price: new Prisma.Decimal((p.price * 5).toFixed(2)),
+    stock: 30,
+    image: p.image,
+  }));
+
+  await prisma.product.createMany({
+    data: normalized,
+  });
+
+  return normalized;
 };
 
-export const getNormalizedProducts = async () => {
-  const products = await fetchFakeStoreProducts();
-  //Normalização dos dados
-  return products.map((p: FakeStoreProduct) => ({
-    id: p.id,
-    nome: p.title,
-    descricao: p.description,
-    preco: Number(p.price) * 5,// conversão fictícia para Reais
-    estoque: Math.floor(Math.random() * 20) + 1,
-    imagem: p.image
-  }));
+//Estoque
+export const getProducts = async () => {
+  return prisma.product.findMany({
+    orderBy: {
+      id: "asc",
+    },
+  });
 };

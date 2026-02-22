@@ -11,27 +11,16 @@ import QuantitySelector from "@/components/QuantitySelector";
 import Image from "next/image";
 import { FiTrash2, FiArrowLeft } from "react-icons/fi";
 import Header from "@/components/Header";
+import Loader from "@/components/Loader";
 import { useRouter } from "next/navigation";
 
-type CartItem = {
-  id: string;
-  productId: number;
-  quantity: number;
-};
-
-type Product = {
-  id: number;
-  nome: string;
-  preco: number;
-  imagem: string;
-};
-
-type MergedItem = CartItem & { product: Product };
+import { CartItem, MergedCartItem } from "@/types/carts";
+import { Product } from "@/types/product";
 
 export default function CartPage() {
   const router = useRouter();
 
-  const [items, setItems] = useState<MergedItem[]>([]);
+  const [items, setItems] = useState<MergedCartItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [cep, setCep] = useState("");
@@ -54,7 +43,7 @@ export default function CartPage() {
           if (!product) return null;
           return { ...item, product };
         })
-        .filter(Boolean) as MergedItem[];
+        .filter(Boolean) as MergedCartItem[];
 
       setItems(merged);
     } catch (error) {
@@ -65,20 +54,26 @@ export default function CartPage() {
   };
 
   const handleQuantityChange = async (itemId: string, newQuantity: number) => {
+    const item = items.find((i) => i.id === itemId);
+    if (!item) return;
+
     if (newQuantity <= 0) return;
+
+    // Proteção contra ultrapassar estoque
+    if (newQuantity > item.product.stock) return;
 
     await updateCartItem(itemId, newQuantity);
 
     setItems((prev) =>
-      prev.map((item) =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item,
-      ),
+      prev.map((i) => (i.id === itemId ? { ...i, quantity: newQuantity } : i)),
     );
+
     window.dispatchEvent(new CustomEvent("cartUpdated"));
   };
 
   const handleRemove = async (itemId: string) => {
     await removeCartItem(itemId);
+
     setItems((prev) => prev.filter((item) => item.id !== itemId));
 
     window.dispatchEvent(new CustomEvent("cartUpdated"));
@@ -99,11 +94,11 @@ export default function CartPage() {
   };
 
   const total = items.reduce(
-    (acc, item) => acc + item.product.preco * item.quantity,
+    (acc, item) => acc + Number(item.product.price) * item.quantity,
     0,
   );
 
-  if (loading) return <p className="p-6">Carregando...</p>;
+  if (loading) return <Loader />;
 
   return (
     <>
@@ -128,9 +123,10 @@ export default function CartPage() {
                 <div key={item.id} className="flex gap-6 border-b pb-6">
                   <div className="relative w-28 h-28 bg-gray-50 rounded-lg">
                     <Image
-                      src={item.product.imagem}
-                      alt={item.product.nome}
+                      src={item.product.image}
+                      alt={item.product.name}
                       fill
+                      sizes="112px"
                       className="object-contain p-3"
                     />
                   </div>
@@ -138,17 +134,22 @@ export default function CartPage() {
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       <h2 className="font-semibold text-lg">
-                        {item.product.nome}
+                        {item.product.name}
                       </h2>
 
                       <p className="text-gray-500">
-                        R$ {item.product.preco.toFixed(2)}
+                        R$ {Number(item.product.price).toFixed(2)}
+                      </p>
+
+                      <p className="text-xs text-gray-400 mt-1">
+                        {item.product.stock} em estoque
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between mt-4">
                       <QuantitySelector
                         value={item.quantity}
+                        max={item.product.stock}
                         onChange={(value) =>
                           handleQuantityChange(item.id, value)
                         }
@@ -164,7 +165,7 @@ export default function CartPage() {
                   </div>
 
                   <div className="font-semibold text-right">
-                    R$ {(item.product.preco * item.quantity).toFixed(2)}
+                    R${(Number(item.product.price) * item.quantity).toFixed(2)}
                   </div>
                 </div>
               ))}
