@@ -147,7 +147,6 @@ export default function CheckoutPage() {
         items: items.map((item) => ({
           productId: item.productId,
           quantity: item.quantity,
-          price: item.product.preco,
         })),
       });
 

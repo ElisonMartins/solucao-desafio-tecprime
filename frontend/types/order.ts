@@ -16,7 +16,6 @@ export interface CheckoutFormData {
 export interface CreateOrderItemDTO {
   productId: number;
   quantity: number;
-  price: number;
 }
 
 export interface CreateOrderDTO extends CheckoutFormData {

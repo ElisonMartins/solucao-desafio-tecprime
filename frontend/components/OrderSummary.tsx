@@ -9,7 +9,7 @@ type Props = {
 
 export default function OrderSummary({ items }: Props) {
   const total = items.reduce(
-    (acc, item) => acc + item.product.preco * item.quantity,
+    (acc, item) => acc + item.product.price * item.quantity,
     0,
   );
 
@@ -24,8 +24,8 @@ export default function OrderSummary({ items }: Props) {
         >
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <Image
-              src={item.product.imagem}
-              alt={item.product.nome}
+              src={item.product.image}
+              alt={item.product.name}
               width={56}
               height={56}
               className="object-cover rounded-lg border"
@@ -33,7 +33,7 @@ export default function OrderSummary({ items }: Props) {
 
             <div className="flex flex-col min-w-0">
               <span className="text-sm font-medium truncate">
-                {item.product.nome}
+                {item.product.name}
               </span>
               <span className="text-xs text-gray-500">
                 Quantidade: {item.quantity}
@@ -42,7 +42,7 @@ export default function OrderSummary({ items }: Props) {
           </div>
 
           <span className="text-sm font-semibold shrink-0">
-            R$ {(item.product.preco * item.quantity).toFixed(2)}
+            R$ {(item.product.price * item.quantity).toFixed(2)}
           </span>
         </div>
       ))}

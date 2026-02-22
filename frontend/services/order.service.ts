@@ -15,7 +15,6 @@ export type CreateOrderDTO = {
   items: {
     productId: number;
     quantity: number;
-    price: number;
   }[];
 };
 
