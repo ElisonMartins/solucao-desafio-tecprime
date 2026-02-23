@@ -1,50 +1,91 @@
 import { prisma } from "../lib/prisma";
+import { logger } from "../lib/logger";
 
 export const addToCart = async (
   userId: string,
   productId: number,
   quantity: number
 ) => {
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-  });
+  logger.info(
+    { userId, productId, quantity },
+    "Add to cart attempt"
+  );
 
-  if (!cart) throw new Error("Carrinho não encontrado");
+  try {
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
 
-  const existingItem = await prisma.cartItem.findFirst({
-    where: {
-      cartId: cart.id,
-      productId,
-    },
-  });
+    if (!cart) {
+      logger.warn({ userId }, "Cart not found");
+      throw new Error("Carrinho não encontrado");
+    }
 
-  if (existingItem) {
-    return prisma.cartItem.update({
-      where: { id: existingItem.id },
-      data: {
-        quantity: existingItem.quantity + quantity,
+    const existingItem = await prisma.cartItem.findFirst({
+      where: {
+        cartId: cart.id,
+        productId,
       },
     });
-  }
 
-  return prisma.cartItem.create({
-    data: {
-      cartId: cart.id,
-      productId,
-      quantity,
-    },
-  });
+    if (existingItem) {
+      const updated = await prisma.cartItem.update({
+        where: { id: existingItem.id },
+        data: {
+          quantity: existingItem.quantity + quantity,
+        },
+      });
+
+      logger.info(
+        { userId, productId, newQuantity: updated.quantity },
+        "Cart item quantity updated"
+      );
+
+      return updated;
+    }
+
+    const created = await prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId,
+        quantity,
+      },
+    });
+
+    logger.info(
+      { userId, productId, quantity },
+      "Cart item created"
+    );
+
+    return created;
+  } catch (error) {
+    logger.error(
+      { userId, productId, error },
+      "Error adding item to cart"
+    );
+    throw error;
+  }
 };
 
 export const getCartByUser = async (userId: string) => {
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-    include: { items: true },
-  });
+  logger.info({ userId }, "Fetching user cart");
 
-  if (!cart) throw new Error("Carrinho não encontrado");
+  try {
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+      include: { items: true },
+    });
 
-  return cart;
+    if (!cart) {
+      logger.warn({ userId }, "Cart not found");
+      throw new Error("Carrinho não encontrado");
+    }
+
+    return cart;
+  } catch (error) {
+    logger.error({ userId, error }, "Error fetching cart");
+    throw error;
+  }
 };
 
 export const updateCartItem = async (
@@ -52,47 +93,100 @@ export const updateCartItem = async (
   itemId: string,
   quantity: number
 ) => {
-  const item = await prisma.cartItem.findUnique({
-    where: { id: itemId },
-    include: { cart: true },
-  });
+  logger.info(
+    { userId, itemId, quantity },
+    "Updating cart item"
+  );
 
-  if (!item || item.cart.userId !== userId) {
-    throw new Error("Item não encontrado");
+  try {
+    const item = await prisma.cartItem.findUnique({
+      where: { id: itemId },
+      include: { cart: true },
+    });
+
+    if (!item || item.cart.userId !== userId) {
+      logger.warn({ userId, itemId }, "Cart item not found or unauthorized");
+      throw new Error("Item não encontrado");
+    }
+
+    const updated = await prisma.cartItem.update({
+      where: { id: itemId },
+      data: { quantity },
+    });
+
+    logger.info(
+      { userId, itemId, quantity },
+      "Cart item updated successfully"
+    );
+
+    return updated;
+  } catch (error) {
+    logger.error(
+      { userId, itemId, error },
+      "Error updating cart item"
+    );
+    throw error;
   }
-
-  return prisma.cartItem.update({
-    where: { id: itemId },
-    data: { quantity },
-  });
 };
 
 export const removeCartItem = async (
   userId: string,
   itemId: string
 ) => {
-  const item = await prisma.cartItem.findUnique({
-    where: { id: itemId },
-    include: { cart: true },
-  });
+  logger.info({ userId, itemId }, "Removing cart item");
 
-  if (!item || item.cart.userId !== userId) {
-    throw new Error("Item não encontrado");
+  try {
+    const item = await prisma.cartItem.findUnique({
+      where: { id: itemId },
+      include: { cart: true },
+    });
+
+    if (!item || item.cart.userId !== userId) {
+      logger.warn({ userId, itemId }, "Cart item not found or unauthorized");
+      throw new Error("Item não encontrado");
+    }
+
+    const deleted = await prisma.cartItem.delete({
+      where: { id: itemId },
+    });
+
+    logger.info({ userId, itemId }, "Cart item removed");
+
+    return deleted;
+  } catch (error) {
+    logger.error(
+      { userId, itemId, error },
+      "Error removing cart item"
+    );
+    throw error;
   }
-
-  return prisma.cartItem.delete({
-    where: { id: itemId },
-  });
 };
 
 export const clearCart = async (userId: string) => {
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-  });
+  logger.info({ userId }, "Clearing cart");
 
-  if (!cart) throw new Error("Carrinho não encontrado");
+  try {
+    const cart = await prisma.cart.findUnique({
+      where: { userId },
+    });
 
-  return prisma.cartItem.deleteMany({
-    where: { cartId: cart.id },
-  });
+    if (!cart) {
+      logger.warn({ userId }, "Cart not found");
+      throw new Error("Carrinho não encontrado");
+    }
+
+    const result = await prisma.cartItem.deleteMany({
+      where: { cartId: cart.id },
+    });
+
+    logger.info(
+      { userId, deletedItems: result.count },
+      "Cart cleared successfully"
+    );
+
+    return result;
+  } catch (error) {
+    logger.error({ userId, error }, "Error clearing cart");
+    throw error;
+  }
 };
