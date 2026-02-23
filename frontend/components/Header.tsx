@@ -58,6 +58,13 @@ export default function Header() {
     };
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setUserName(null);
+    setCartCount(0);
+    router.push("/");
+  };
+
   const truncateName = (name: string) => {
     return name.length > 20 ? name.slice(0, 20) + "..." : name;
   };
@@ -88,6 +95,20 @@ export default function Header() {
               <span className="text-base md:text-lg font-medium text-gray-800">
                 Olá, {truncateName(userName)}
               </span>
+
+              <button
+                onClick={() => router.push("/order-search")}
+                className="text-sm text-gray-500 hover:text-black transition cursor-pointer"
+              >
+                Pedidos
+              </button>
+
+              <button
+                onClick={handleLogout}
+                className="text-sm text-gray-500 hover:text-black transition cursor-pointer"
+              >
+                Sair
+              </button>
 
               <button
                 onClick={() => router.push("/cart")}

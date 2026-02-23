@@ -39,7 +39,7 @@ export default function ProductModal({ product, onClose }: Props) {
       await addToCart(product.id, quantity);
 
       window.dispatchEvent(new CustomEvent("cartUpdated"));
-
+      toast.success("Produto adicionado ao carrinho");
       resetAndClose();
     } catch {
       toast.error("Erro ao adicionar ao carrinho.");
