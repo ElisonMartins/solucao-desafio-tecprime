@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiCheckCircle } from "react-icons/fi";
 import Header from "@/components/Header";
 
 export default function OrderSuccessPage() {
@@ -10,23 +10,46 @@ export default function OrderSuccessPage() {
 
   return (
     <>
-      <Header />
+      <div className="flex flex-col min-h-screen">
+        <Header />
 
-      <div className="max-w-3xl mx-auto p-6">
-        <button
-          onClick={() => router.push("/")}
-          className="flex items-center gap-2 text-gray-500 hover:text-black transition mb-6 cursor-pointer"
-        >
-          <FiArrowLeft size={30} />
-        </button>
+        <main className="flex-1 flex items-center justify-center px-6">
+          <div className="w-full max-w-md rounded-2xl p-8 sm:p-10 text-center space-y-6">
+            <FiCheckCircle size={72} className="mx-auto text-green-500" />
 
-        <div className="text-center mt-10">
-          <h1 className="text-3xl font-bold mb-4">
-            Pedido realizado com sucesso 🎉
-          </h1>
-          <p className="text-lg">Número do pedido:</p>
-          <p className="text-2xl font-bold mt-2">{id}</p>
-        </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl font-bold">
+                Pedido confirmado!
+              </h1>
+              <p className="text-gray-600 text-sm sm:text-base">
+                Seu pedido foi recebido com sucesso.
+              </p>
+            </div>
+
+            <div className="bg-gray-100 rounded-xl py-4 px-6">
+              <p className="text-xs text-gray-500 uppercase tracking-wide">
+                Número do pedido
+              </p>
+              <p className="text-xl font-bold mt-1">{id}</p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
+              <button
+                onClick={() => router.push("/order-search")}
+                className="w-full px-5 py-3 bg-black text-white rounded-xl hover:opacity-90 transition cursor-pointer"
+              >
+                Consultar Pedido
+              </button>
+
+              <button
+                onClick={() => router.push("/")}
+                className="w-full px-5 py-3 border border-black rounded-xl hover:bg-gray-100 transition cursor-pointer"
+              >
+                Voltar para loja
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     </>
   );

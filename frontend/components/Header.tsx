@@ -97,6 +97,13 @@ export default function Header() {
               </span>
 
               <button
+                onClick={() => router.push("/order-search")}
+                className="text-sm text-gray-500 hover:text-black transition cursor-pointer"
+              >
+                Pedidos
+              </button>
+
+              <button
                 onClick={handleLogout}
                 className="text-sm text-gray-500 hover:text-black transition cursor-pointer"
               >

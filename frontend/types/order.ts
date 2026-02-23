@@ -27,3 +27,18 @@ export interface CreateOrderResponse {
   message: string;
   orderId: string;
 }
+export interface OrderItem {
+  id: string;
+  productId: number;
+  quantity: number;
+  price: string; 
+}
+
+export interface OrderDetails {
+  id: string;
+  name: string;
+  email: string;
+  paymentMethod: PaymentMethod;
+  total: string;
+  items: OrderItem[];
+}
